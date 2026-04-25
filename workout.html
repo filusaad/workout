@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPM Grind</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222;
+    --accent: #e8ff00;
+    --accent2: #ff6b00;
+    --red: #ff3333;
+    --green: #00ff88;
+    --text: #f0f0f0;
+    --muted: #555;
+    --card-shadow: 0 0 0 1px #222, 0 8px 32px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,0,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,0,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left {}
+  .logo {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 36px;
+    letter-spacing: -1px;
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(232,255,0,0.3);
+    line-height: 1;
+  }
+  .logo span { color: var(--text); }
+  .tagline {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .streak-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .streak-num {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 32px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .streak-label { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* STATUS BAR */
+  .status-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .status-info { display: flex; align-items: center; gap: 12px; }
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s ease infinite;
+    flex-shrink: 0;
+  }
+  .status-dot.warn { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+  .status-dot.dead { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .status-text { font-size: 14px; }
+  .status-text strong { color: var(--accent); }
+  .week-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .week-pill span { color: var(--text); font-weight: 600; }
+
+  /* TODAY SECTION */
+  .section-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* EXERCISE CARDS */
+  .exercises-grid {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .ex-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ex-card.done {
+    border-color: rgba(0,255,136,0.3);
+    background: rgba(0,255,136,0.04);
+  }
+  .ex-card.done .ex-name { color: var(--muted); text-decoration: line-through; }
+  .ex-icon {
+    font-size: 28px;
+    width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .ex-info { flex: 1; }
+  .ex-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .ex-target { font-size: 12px; color: var(--muted); }
+  .ex-target strong { color: var(--accent); font-size: 14px; }
+  .ex-builds { font-size: 11px; color: #444; margin-top: 3px; letter-spacing: 0.5px; }
+  .ex-check {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .ex-card.done .ex-check {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+
+  /* ROUNDS */
+  .rounds-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .rounds-label { font-size: 14px; }
+  .rounds-label small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+  .rounds-controls { display: flex; align-items: center; gap: 12px; }
+  .rnd-btn {
+    width: 36px; height: 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .rnd-btn:hover { background: #222; }
+  .rnd-num {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 24px;
+    color: var(--accent);
+    min-width: 24px;
+    text-align: center;
+  }
+
+  /* COMPLETE BUTTON */
+  .complete-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+  }
+  .complete-btn:hover { background: #d4e800; transform: translateY(-1px); }
+  .complete-btn:disabled {
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* PROGRESS BARS */
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .progress-card .section-title { margin-bottom: 16px; }
+  .prog-item { margin-bottom: 14px; }
+  .prog-item:last-child { margin-bottom: 0; }
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .prog-name { font-size: 13px; font-weight: 500; }
+  .prog-val { font-size: 12px; color: var(--muted); }
+  .prog-val span { color: var(--accent); font-weight: 700; }
+  .prog-bar-bg { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+  .prog-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.6s ease;
+  }
+
+  /* HISTORY */
+  .history-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .history-card .section-title { margin-bottom: 16px; }
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .history-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: var(--muted);
+    flex-direction: column;
+    gap: 2px;
+    cursor: default;
+  }
+  .history-day.completed { background: rgba(232,255,0,0.12); border-color: rgba(232,255,0,0.3); }
+  .history-day.completed .hd-dot { background: var(--accent); }
+  .history-day.missed { background: rgba(255,51,51,0.06); border-color: rgba(255,51,51,0.2); }
+  .history-day.today { border-color: var(--accent); }
+  .hd-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .history-legend { display: flex; gap: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* LOG */
+  .log-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .log-card .section-title { margin-bottom: 16px; }
+  .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+  .log-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .log-date { color: var(--muted); font-size: 11px; min-width: 80px; }
+  .log-text { flex: 1; }
+  .log-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-done { background: rgba(0,255,136,0.1); color: var(--green); }
+  .badge-reset { background: rgba(255,51,51,0.1); color: var(--red); }
+  .badge-level { background: rgba(232,255,0,0.1); color: var(--accent); }
+  .empty-log { color: var(--muted); font-size: 13px; text-align: center; padding: 20px; }
+
+  /* RESET */
+  .reset-area {
+    margin-top: 32px;
+    text-align: center;
+  }
+  .reset-btn {
+    background: none;
+    border: 1px solid #333;
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* MODALS */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    transform: scale(0.95);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal { transform: scale(1); }
+  .modal-icon { font-size: 48px; margin-bottom: 16px; }
+  .modal-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 24px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .modal-body { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 24px; }
+  .modal-btn {
+    padding: 14px 32px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  .modal-btn-secondary {
+    padding: 14px 24px;
+    background: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+
+  /* TIPS */
+  .tips-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .tip-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .tip-card .tip-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .tip-card .tip-val { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .tip-card .tip-val strong { color: var(--accent2); }
+
+  /* SCROLL */
+  .log-list::-webkit-scrollbar { width: 4px; }
+  .log-list::-webkit-scrollbar-track { background: var(--surface2); border-radius: 2px; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* COMPLETED TODAY msg */
+  .done-today-banner {
+    background: rgba(0,255,136,0.06);
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .done-today-banner.show { display: flex; }
+  .done-icon { font-size: 24px; }
+  .done-text { font-size: 14px; color: var(--green); }
+  .done-text small { color: var(--muted); display: block; font-size: 12px; margin-top: 2px; }
+
+  @media (max-width: 480px) {
+    .logo { font-size: 28px; }
+    .tips-row { grid-template-columns: 1fr; }
+    .history-grid { grid-template-columns: repeat(7, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="logo">OPM <span>GRIND</span></div>
+      <div class="tagline">No excuses. Every day.</div>
+    </div>
+    <div class="streak-badge">
+      <div class="streak-num" id="streakNum">0</div>
+      <div class="streak-label">🔥 Day Streak</div>
+    </div>
+  </header>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-info">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="status-text" id="statusText">Loading...</div>
+    </div>
+    <div class="week-pill">Week <span id="weekNum">1</span></div>
+  </div>
+
+  <!-- DONE TODAY BANNER -->
+  <div class="done-today-banner" id="doneBanner">
+    <div class="done-icon">✅</div>
+    <div class="done-text">
+      Workout done for today. Rest up.
+      <small>Come back tomorrow. Don't skip.</small>
+    </div>
+  </div>
+
+  <!-- TODAY -->
+  <div id="workoutSection">
+    <div class="section-title">Today's Workout</div>
+    <div class="exercises-grid" id="exercisesGrid"></div>
+
+    <!-- ROUNDS -->
+    <div class="rounds-section">
+      <div class="rounds-label">
+        Rounds
+        <small>Do all exercises, rest 60s, repeat</small>
+      </div>
+      <div class="rounds-controls">
+        <button class="rnd-btn" onclick="changeRounds(-1)">−</button>
+        <div class="rnd-num" id="roundsNum">2</div>
+        <button class="rnd-btn" onclick="changeRounds(1)">+</button>
+      </div>
+    </div>
+
+    <button class="complete-btn" id="completeBtn" onclick="completeWorkout()">
+      MARK WORKOUT COMPLETE
+    </button>
+  </div>
+
+  <!-- TIPS -->
+  <div class="tips-row">
+    <div class="tip-card">
+      <div class="tip-label">💡 For appearing bigger</div>
+      <div class="tip-val"><strong>Shoulders + Chest</strong> are your priority. Wide shoulders = looks bigger at any height.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label">📈 Auto-progression</div>
+      <div class="tip-val">Reps go up every <strong>7 days</strong> if you stay consistent. Miss 3+ days = no increase.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label">🧠 Quit detection</div>
+      <div class="tip-val">Miss <strong>7+ days</strong> and the app assumes you quit — it resets everything when you return.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-label">💪 Bicep note</div>
+      <div class="tip-val">Diamond push-ups hit triceps/biceps. Get a <strong>resistance band</strong> when you're ready for real curls.</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-card">
+    <div class="section-title">Rep Progress</div>
+    <div id="progressBars"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-card">
+    <div class="section-title">Last 28 Days</div>
+    <div class="history-grid" id="historyGrid"></div>
+    <div class="history-legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(232,255,0,0.4)"></div> Completed
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(255,51,51,0.3)"></div> Missed
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1a1a1a; border:1px solid #e8ff00"></div> Today
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="log-card">
+    <div class="section-title">Activity Log</div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <!-- RESET -->
+  <div class="reset-area">
+    <button class="reset-btn" onclick="confirmReset()">Reset all data</button>
+  </div>
+
+</div>
+
+<!-- COMPLETE MODAL -->
+<div class="modal-overlay" id="completeModal">
+  <div class="modal">
+    <div class="modal-icon">🔥</div>
+    <div class="modal-title">BEAST MODE</div>
+    <div class="modal-body" id="completeModalBody">Another day done. Keep the streak alive.</div>
+    <button class="modal-btn" onclick="closeModal('completeModal')">LET'S GO</button>
+  </div>
+</div>
+
+<!-- LEVEL UP MODAL -->
+<div class="modal-overlay" id="levelModal">
+  <div class="modal">
+    <div class="modal-icon">⚡</div>
+    <div class="modal-title">LEVEL UP</div>
+    <div class="modal-body" id="levelModalBody">Reps increased! You earned it.</div>
+    <button class="modal-btn" onclick="closeModal('levelModal')">CRUSH IT</button>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title" style="color:var(--red)">FULL RESET</div>
+    <div class="modal-body">This deletes all your data — streak, history, rep progress. Are you sure?</div>
+    <button class="modal-btn-secondary" onclick="closeModal('resetModal')">Cancel</button>
+    <button class="modal-btn" style="background:var(--red)" onclick="doReset()">RESET</button>
+  </div>
+</div>
+
+<!-- COMEBACK MODAL -->
+<div class="modal-overlay" id="comebackModal">
+  <div class="modal">
+    <div class="modal-icon">💀</div>
+    <div class="modal-title">YOU QUIT.</div>
+    <div class="modal-body" id="comebackModalBody">You were gone too long. Everything resets. Start from zero — again.</div>
+    <button class="modal-btn" onclick="closeModal('comebackModal')">I'M BACK</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const EXERCISES = [
+  { id: 'pushup',   name: 'Push-ups',         icon: '💪', builds: 'Chest · Shoulders · Triceps', startReps: 10 },
+  { id: 'diamond',  name: 'Diamond Push-ups',  icon: '💎', builds: 'Triceps · Biceps · Inner chest', startReps: 5 },
+  { id: 'pike',     name: 'Pike Push-ups',     icon: '🔺', builds: 'Shoulders (width = bigger look)', startReps: 5 },
+  { id: 'situp',    name: 'Sit-ups',           icon: '🧱', builds: 'Upper abs', startReps: 10 },
+  { id: 'legraise', name: 'Leg Raises',        icon: '🦵', builds: 'Lower abs (most visible)', startReps: 10 },
+  { id: 'squat',    name: 'Squats',            icon: '🏋️', builds: 'Legs · Overall mass', startReps: 10 },
+];
+
+const QUIT_THRESHOLD = 7;   // days missed = assumed quit
+const MISS_NO_LEVEL  = 3;   // days missed in a week = no level up
+
+const DEFAULT_STATE = () => ({
+  startDate: null,
+  lastWorkout: null,      // ISO date string 'YYYY-MM-DD'
+  streak: 0,
+  longestStreak: 0,
+  totalDays: 0,
+  week: 1,
+  weekWorkouts: 0,        // workouts done this week
+  weekStart: null,        // ISO date of current week start
+  reps: Object.fromEntries(EXERCISES.map(e => [e.id, e.startReps])),
+  rounds: 2,
+  history: {},            // { 'YYYY-MM-DD': 'done'|'missed' }
+  log: [],                // [{ date, text, badge }]
+  completedToday: false,
+  checkedExercises: [],
+});
+
+let state = null;
+
+function load() {
+  const saved = localStorage.getItem('opm_state');
+  if (saved) {
+    state = { ...DEFAULT_STATE(), ...JSON.parse(saved) };
+  } else {
+    state = DEFAULT_STATE();
+  }
+}
+
+function save() {
+  localStorage.setItem('opm_state', JSON.stringify(state));
+}
+
+// ===== DATE HELPERS =====
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+function daysBetween(a, b) {
+  const da = new Date(a), db = new Date(b);
+  return Math.round((db - da) / 86400000);
+}
+function formatDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().split('T')[0];
+}
+
+// ===== INIT LOGIC =====
+function init() {
+  load();
+
+  const t = today();
+
+  // First time
+  if (!state.startDate) {
+    state.startDate = t;
+    state.weekStart = t;
+    save();
+    render();
+    return;
+  }
+
+  // Check how long since last workout
+  if (state.lastWorkout) {
+    const gap = daysBetween(state.lastWorkout, t);
+
+    // Quit detected
+    if (gap >= QUIT_THRESHOLD && !state.completedToday) {
+      // Mark missed days in history
+      for (let i = 1; i < gap; i++) {
+        const d = daysAgo(gap - i);
+        if (!state.history[d]) state.history[d] = 'missed';
+      }
+      addLog(t, `Returned after ${gap} days — full reset triggered.`, 'badge-reset');
+      resetProgress();
+      save();
+      showModal('comebackModal');
+      document.getElementById('comebackModalBody').textContent =
+        `You were gone for ${gap} days. The streak is gone. Reps reset. Start from scratch — for real this time.`;
+      render();
+      return;
+    }
+
+    // Mark previous days as missed if they weren't done
+    for (let i = 1; i < gap; i++) {
+      const d = daysAgo(gap - i);
+      if (!state.history[d]) state.history[d] = 'missed';
+    }
+  }
+
+  // Reset completedToday if it's a new day
+  if (state.lastWorkout !== t) {
+    state.completedToday = false;
+    state.checkedExercises = [];
+  }
+
+  // Week rollover check
+  if (state.weekStart) {
+    const weekGap = daysBetween(state.weekStart, t);
+    if (weekGap >= 7) {
+      rollWeek();
+    }
+  }
+
+  save();
+  render();
+}
+
+function resetProgress() {
+  state.streak = 0;
+  state.week = 1;
+  state.weekWorkouts = 0;
+  state.weekStart = today();
+  state.reps = Object.fromEntries(EXERCISES.map(e => [e.id, e.startReps]));
+  state.completedToday = false;
+  state.checkedExercises = [];
+  state.startDate = today();
+  state.lastWorkout = null;
+}
+
+function rollWeek() {
+  const missedThisWeek = 7 - state.weekWorkouts;
+  let levelUp = false;
+
+  if (missedThisWeek < MISS_NO_LEVEL) {
+    // Increase reps
+    EXERCISES.forEach(e => {
+      state.reps[e.id] = Math.min(state.reps[e.id] + 3, 100);
+    });
+    levelUp = true;
+    addLog(today(), `Week ${state.week} complete! Reps increased by 3.`, 'badge-level');
+  } else {
+    addLog(today(), `Week ${state.week} ended — too many misses. Reps held.`, 'badge-reset');
+  }
+
+  state.week += 1;
+  state.weekWorkouts = 0;
+  state.weekStart = today();
+
+  if (levelUp) {
+    const prev = state.reps[EXERCISES[0].id] - 3;
+    document.getElementById('levelModalBody').textContent =
+      `Week ${state.week - 1} done. Reps went from ${prev} → ${state.reps[EXERCISES[0].id]}. Keep pushing.`;
+    showModal('levelModal');
+  }
+}
+
+// ===== ACTIONS =====
+function toggleExercise(id) {
+  if (state.completedToday) return;
+  const idx = state.checkedExercises.indexOf(id);
+  if (idx > -1) {
+    state.checkedExercises.splice(idx, 1);
+  } else {
+    state.checkedExercises.push(id);
+  }
+  save();
+  renderExercises();
+  renderCompleteBtn();
+}
+
+function changeRounds(delta) {
+  state.rounds = Math.max(1, Math.min(5, state.rounds + delta));
+  save();
+  document.getElementById('roundsNum').textContent = state.rounds;
+}
+
+function completeWorkout() {
+  if (state.completedToday) return;
+
+  const t = today();
+  state.history[t] = 'done';
+  state.completedToday = true;
+  state.lastWorkout = t;
+
+  // Streak
+  const prev = daysAgo(1);
+  if (state.history[prev] === 'done' || state.streak === 0) {
+    state.streak += 1;
+  } else {
+    state.streak = 1;
+  }
+  state.longestStreak = Math.max(state.longestStreak, state.streak);
+  state.totalDays += 1;
+  state.weekWorkouts += 1;
+
+  addLog(t, `Day ${state.totalDays} done. ${state.rounds} round${state.rounds > 1 ? 's' : ''} completed.`, 'badge-done');
+
+  save();
+  render();
+
+  document.getElementById('completeModalBody').textContent =
+    `Streak: ${state.streak} days 🔥  |  Total: ${state.totalDays} workouts done. Rest, eat, come back tomorrow.`;
+  showModal('completeModal');
+}
+
+function addLog(date, text, badge) {
+  state.log.unshift({ date, text, badge });
+  if (state.log.length > 50) state.log.pop();
+}
+
+// ===== RENDER =====
+function render() {
+  renderStatus();
+  renderExercises();
+  renderCompleteBtn();
+  renderProgress();
+  renderHistory();
+  renderLog();
+  document.getElementById('streakNum').textContent = state.streak;
+  document.getElementById('weekNum').textContent = state.week;
+  document.getElementById('roundsNum').textContent = state.rounds;
+
+  const banner = document.getElementById('doneBanner');
+  const workout = document.getElementById('workoutSection');
+  if (state.completedToday) {
+    banner.classList.add('show');
+    workout.style.opacity = '0.4';
+    workout.style.pointerEvents = 'none';
+  } else {
+    banner.classList.remove('show');
+    workout.style.opacity = '1';
+    workout.style.pointerEvents = 'all';
+  }
+}
+
+function renderStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const t = today();
+
+  if (!state.lastWorkout) {
+    dot.className = 'status-dot warn';
+    txt.innerHTML = `<strong>Day 1</strong> — Start your journey. Complete today's workout.`;
+    return;
+  }
+
+  const gap = daysBetween(state.lastWorkout, t);
+
+  if (state.completedToday) {
+    dot.className = 'status-dot';
+    txt.innerHTML = `<strong>Done for today</strong> — Streak: ${state.streak} days. See you tomorrow.`;
+  } else if (gap === 0) {
+    dot.className = 'status-dot';
+    txt.innerHTML = `<strong>Ready</strong> — Complete today's workout to keep the streak alive.`;
+  } else if (gap === 1) {
+    dot.className = 'status-dot warn';
+    txt.innerHTML = `<strong>Missed yesterday</strong> — Don't miss again. ${QUIT_THRESHOLD - gap} days left before reset.`;
+  } else if (gap < QUIT_THRESHOLD) {
+    dot.className = 'status-dot warn';
+    txt.innerHTML = `<strong>Warning</strong> — Missed ${gap} days. ${QUIT_THRESHOLD - gap} more and everything resets.`;
+  } else {
+    dot.className = 'status-dot dead';
+    txt.innerHTML = `<strong>Critical</strong> — Back just in time.`;
+  }
+}
+
+function renderExercises() {
+  const grid = document.getElementById('exercisesGrid');
+  grid.innerHTML = '';
+  EXERCISES.forEach(ex => {
+    const done = state.checkedExercises.includes(ex.id);
+    const card = document.createElement('div');
+    card.className = 'ex-card' + (done ? ' done' : '');
+    card.onclick = () => toggleExercise(ex.id);
+    card.innerHTML = `
+      <div class="ex-icon">${ex.icon}</div>
+      <div class="ex-info">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-target"><strong>${state.reps[ex.id]}</strong> reps × ${state.rounds} rounds</div>
+        <div class="ex-builds">${ex.builds}</div>
+      </div>
+      <div class="ex-check">${done ? '✓' : ''}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderCompleteBtn() {
+  const btn = document.getElementById('completeBtn');
+  const allDone = state.checkedExercises.length === EXERCISES.length;
+  btn.disabled = !allDone || state.completedToday;
+  if (state.completedToday) {
+    btn.textContent = 'COMPLETED TODAY ✓';
+  } else if (!allDone) {
+    btn.textContent = `CHECK OFF ALL EXERCISES (${state.checkedExercises.length}/${EXERCISES.length})`;
+  } else {
+    btn.textContent = 'MARK WORKOUT COMPLETE';
+  }
+}
+
+function renderProgress() {
+  const container = document.getElementById('progressBars');
+  container.innerHTML = '';
+  EXERCISES.forEach(ex => {
+    const start = ex.startReps;
+    const current = state.reps[ex.id];
+    const max = start + (10 * 3); // ~10 week max estimate for bar visual
+    const pct = Math.min(100, ((current - start) / (max - start)) * 100);
+
+    const div = document.createElement('div');
+    div.className = 'prog-item';
+    div.innerHTML = `
+      <div class="prog-header">
+        <div class="prog-name">${ex.icon} ${ex.name}</div>
+        <div class="prog-val">Started: ${start} → Now: <span>${current}</span></div>
+      </div>
+      <div class="prog-bar-bg">
+        <div class="prog-bar-fill" style="width:${Math.max(pct,2)}%"></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderHistory() {
+  const grid = document.getElementById('historyGrid');
+  grid.innerHTML = '';
+  const t = today();
+
+  for (let i = 27; i >= 0; i--) {
+    const d = daysAgo(i);
+    const status = state.history[d];
+    const isToday = d === t;
+    const dayNum = new Date(d + 'T00:00:00').getDate();
+
+    const cell = document.createElement('div');
+    cell.className = 'history-day' +
+      (status === 'done' ? ' completed' : '') +
+      (status === 'missed' ? ' missed' : '') +
+      (isToday ? ' today' : '');
+    cell.title = d + (status ? ' — ' + status : '');
+
+    cell.innerHTML = `
+      <div class="hd-dot"></div>
+      <span>${dayNum}</span>
+    `;
+    grid.appendChild(cell);
+  }
+}
+
+function renderLog() {
+  const list = document.getElementById('logList');
+  if (state.log.length === 0) {
+    list.innerHTML = '<div class="empty-log">No activity yet. Complete your first workout.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  state.log.forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `
+      <div class="log-date">${formatDate(entry.date)}</div>
+      <div class="log-text">${entry.text}</div>
+      <div class="log-badge ${entry.badge}">${entry.badge.replace('badge-','')}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ===== MODALS =====
+function showModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function confirmReset() {
+  showModal('resetModal');
+}
+
+function doReset() {
+  state = DEFAULT_STATE();
+  save();
+  closeModal('resetModal');
+  render();
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
